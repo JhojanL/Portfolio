@@ -1,0 +1,169 @@
+{% extends "Project/layout.html" %}
+{% load static %}
+
+{% block title %}
+    Examen
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <!-- Toast -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="toast-header">
+                <strong class="me-auto text-white">Mensaje</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+              <div class="toast-body" id="message">
+              </div>
+            </div>
+        </div>
+        <h1>{{exam.title}}</h1>
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-6">
+                        <div id="timer">
+                            <strong>Tiempo: </strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div id="total-questions" class="text-end">
+                            <strong>Preguntas: </strong>{{exam_questions_options|length}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <form class="form-group" id="exam">
+                    {% csrf_token %}
+                    <!-- Questions -->
+                    {% for exam_question, exam_question_options in exam_questions_options %}
+                        <div id="question-{{ forloop.counter }}" class="questionLoopNumber">
+                            <div id="questionId-{{ exam_question.id }}" class="questionsIds">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Pregunta {{ forloop.counter }}</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-end">
+                                            <img src="\static\Project\SVGs\icons8-lazo-marcapaginas.svg" alt="Icono de marca páginas" class="question-markers" id="questionStatus-{{ exam_question.id }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <P>{{ exam_question.question|safe|linebreaksbr }}</P>
+                                {% if exam_question.image %}
+                                    <img src="{{ exam_question.image }}" class="exam-image" alt="Image">
+                                {% endif %}
+                            </div>
+                            <hr>
+                            <p class="card-text"><small class="text-muted">Categoria: {{ exam_question.category }} | Subcategoria: {{ exam_question.subcategory }}</small></p>
+                            <!-- Options -->
+                            {% for exam_question_option in exam_question_options %}
+                                <div class="form-check">
+                                    {% if exam_question_option.option_image %}
+                                        <input class="form-check-input" type="radio" name="question{{ exam_question.id }}" value="{{ exam_question_option.option_image }}">
+                                        <label class="form-check-label">
+                                            <img src="{{ exam_question_option.option_image }}" class="style-image-option" alt="Image">
+                                        </label>
+                                    {% else %}
+                                        <input class="form-check-input" type="radio" name="question{{ exam_question.id }}" value="{{ exam_question_option.option_text }}">
+                                        <label class="form-check-label">{{ exam_question_option.option_text }}</label>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </form>
+            </div>
+            <div class="card-footer">
+                <!-- Next and previous button -->
+                <div class="row">
+                    <div class="col">
+                        <div class="container text-center">
+                            <button class="btn btn-primary" id="previous">Previous</button>
+                            <button class="btn btn-primary" id="next">Next</button>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col">
+                        <div class="container text-center">
+                            <button type="button" class="btn btn-primary" id="save">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="accordion" id="accordionPanelsStayOpenExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                  Índice de Preguntas
+                </button>
+              </h2>
+              <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne">
+                <div class="accordion-body">
+                    <div class="row">
+                        <!-- Filters for the index of questions -->
+                        <div class="col text-center m-1"><button class="btn btn-danger" id="no-answer">Sin responder</button></div>
+                        <div class="col text-center m-1"><button class="btn btn-success" id="answered">Respondidas</button></div>
+                        <div class="col text-center m-1"><button class="btn btn-secondary" id="marked">Pendientes</button></div>
+                        <div class="col text-center m-1"><button class="btn btn-primary" id="all">Todas</button></div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="d-flex justify-content-center flex-wrap align-items-center">
+                            <!-- Index of questions -->
+                            {% for exam_question, exam_question_options in exam_questions_options %}
+                                <div class="p-2 g-col-1">
+                                    <button class="btn btn-primary index-button mx-1" id="indexButton-{{ exam_question.id }}" value="{{ forloop.counter }}">{{ forloop.counter }}</button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'Project/exam.js' %}"></script>
+    <script>
+        // Timer
+        var endTime = new Date("{{ end_time }}").getTime(); // obtiene la hora de finalización
+        var timer = setInterval(function() {
+            var currentTime = new Date().getTime(); // obtiene la hora actual
+            var timeLeft = Math.max(0, Math.floor((endTime - currentTime) / 1000)); // calcula el tiempo restante
+            var hours = Math.floor(timeLeft / 3600);
+            var minutes = Math.floor((timeLeft - (hours * 3600)) / 60);
+            var seconds = Math.floor(timeLeft % 60);
+            hours = (hours < 10 ? "0" + hours : hours);
+            minutes = (minutes < 10 ? "0" + minutes : minutes);
+            seconds = (seconds < 10 ? "0" + seconds : seconds);
+            var formattedTime = hours + ":" + minutes + ":" + seconds;
+            document.getElementById("timer").innerHTML = "<strong>Tiempo: </strong>" + formattedTime;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                document.getElementById("timer").innerHTML = "<strong>Tiempo: </strong>Excedido";
+                const toastLiveExample = document.getElementById('liveToast')
+                // Change the background color of the class="toast-header" to red
+                document.querySelector(".toast-header").classList.remove("bg-success");
+                document.querySelector(".toast-header").classList.add("bg-danger");
+                // Change the content of the class me-auto to "Mensaje"
+                document.querySelector(".me-auto").innerHTML = "Mensaje";
+                // Change the toast body
+                document.querySelector("#message").innerHTML = "Tiempo límite excedido. Puedes seguir completando el examen";
+                const toast = new bootstrap.Toast(toastLiveExample)
+                toast.show()
+            }
+        }, 1000);
+    </script>
+    <!-- JavaScript display engine for mathematics: https://www.mathjax.org/#gettingstarted -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+{% endblock %}

@@ -1,0 +1,390 @@
+{% extends "Project/layout.html" %}
+{% load static %}
+
+{% block title %}
+    Examen
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <!-- Toast -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="toast-header">
+                <strong class="me-auto text-white">Mensaje</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+              </div>
+              <div class="toast-body" id="message">
+              </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmación</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Al darle clic al botón "Eliminar", se eliminará la pregunta, sus opciones y explicación permanentemente.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <a href="/" class="btn btn-danger" id="delete-modal" role="button">Eliminar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="viewQuestionModal" tabindex="-1" aria-labelledby="viewQuestionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="viewQuestionModalLabel">Vista Previa</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body overflow-x-auto" id="preview-content"></div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if not exam.is_active %}
+            <div class="alert alert-warning" role="alert">
+                Este examen no está activo.
+            </div>
+        {% endif %}
+        <h1>{{exam.title}}</h1>
+        <div id="edit-questions">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <button class="btn btn-secondary" id="new-question-btn">Nueva Pregunta</button>
+                        </div>
+                        <div class="col-6">
+                            <div id="total-questions" class="align-items-center">
+                                <strong>Preguntas: </strong>{{exam_questions_options|length}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="exam">
+                    {% for exam_question, exam_question_options in exam_questions_options %}
+                        <form class="form-group" method="PUT" style="margin-bottom: 0">
+                            {% csrf_token %}
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            <div id="question-{{ forloop.counter }}" class="questionLoopNumber">
+                                <div id="questionId-{{ exam_question.id }}" class="questionsIds">
+                                    <div class="row align-items-center">
+                                        <div class="col-6">
+                                            <strong>Pregunta {{ forloop.counter }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="d-flex justify-content-end align-items-center">
+                                                <strong>N° Orden:</strong> <input type="number" class="form-control OrdenQuestions" id="orden-question-{{ exam_question.id }}" value="{{ exam_question.orden }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <textarea class="form-control text-exam" id="text-question-{{ exam_question.id }}">{{ exam_question.question }}</textarea>
+                                    <hr>
+                                    {% if exam_question.image %}
+                                        <img src="{{ exam_question.image }}" id="option-image-{{ exam_question.id }}" class="exam-image" alt="Image">
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <strong>URL Imagen:</strong>
+                                            <input type="url" class="form-control" value="{{ exam_question.image }}" id="image-question-{{ exam_question.id }}" style="width: auto; min-width: 0;">
+                                        </div>
+                                        <hr>
+                                    {% else %}
+                                        <img src="" id="option-image-{{ exam_question.id }}" class="exam-image" alt="Image" hidden>
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <strong>URL:</strong>
+                                            <input type="url" class="form-control" placeholder="URL de la Imagen" id="image-question-{{ exam_question.id }}" style="width: auto; min-width: 0;">
+                                        </div>
+                                        <hr>
+                                    {% endif %}
+                                </div>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        Categoria:
+                                        <select name="category" class="form-select" id="category-question-{{ exam_question.id }}">
+                                            {% for category in categories %}
+                                                {% if category.id == exam_question.category.id %}
+                                                    <option value="{{ category.id }}" selected>{{ category.name }}</option>
+                                                {% else %}
+                                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        Subcategoria:
+                                        <select name="subcategory" class="form-select" id="subcategory-question-{{ exam_question.id }}">
+                                            {% for subcategory in subcategories %}
+                                                {% if subcategory.id == exam_question.subcategory.id %}
+                                                    <option value="{{ subcategory.id }}" selected>{{ subcategory.name }}</option>
+                                                {% else %}
+                                                    <option value="{{ subcategory.id }}">{{ subcategory.name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </small>
+                                </p>
+                                <div class="form-check form-switch">
+                                    {% if exam_question_options.0.option_image %}
+                                        <input class="form-check-input image-switch" type="checkbox" role="switch" id="image-switch-{{ exam_question.id }}" checked>
+                                    {% else %}
+                                        <input class="form-check-input image-switch" type="checkbox" role="switch" id="image-switch-{{ exam_question.id }}">
+                                    {% endif %}
+                                    <label class="form-check-label" for="image-switch">Activar si opciones son imagenes</label>
+                                </div>
+                                <!-- Options -->
+                                {% for exam_question_option in exam_question_options %}
+                                    <div class="form-check">
+                                        {% if exam_question_option.is_correct %}
+                                            <input class="form-check-input" type="radio" name="question{{ exam_question.id }}" checked>
+                                        {% else %}
+                                            <input class="form-check-input" type="radio" name="question{{ exam_question.id }}">
+                                        {% endif %}
+                                        <label class="form-check-label" style="width: 100%">
+                                            <span class="text-input-{{ exam_question.id }}" {% if exam_question_option.option_image %} style="display:none" {% endif %}>
+                                                <input type="text" class="form-control text-option-{{ exam_question.id }}" value="{{ exam_question_option.option_text }}" id="textOption-{{ exam_question_option.id }}">
+                                            </span>
+                                            <span class="image-input-{{ exam_question.id }}" {% if exam_question_option.option_text %} style="display:none"{% endif %} >
+                                                {% if exam_question_option.option_image %}
+                                                    <img src="{{ exam_question_option.option_image }}" class="exam-image-option-{{ exam_question.id }} style-image-option" id="imageOptionSrc-{{ exam_question_option.id }}" alt="Image">
+                                                {% endif %}
+                                                <div class="d-flex justify-content-start align-items-center">
+                                                    <strong>URL Imagen:</strong>
+                                                    <input type="url" class="form-control image-option-{{ exam_question.id }}" value="{{ exam_question_option.option_image }}" placeholder="URL de la imagen" id="imageOption-{{ exam_question_option.id }}" style="width: auto; min-width: 0;">
+                                                </div>
+                                            </span>
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                                <hr class="border border-secondary border-2 opacity-50">
+                                <p><strong>Explicación</strong></p>
+                                {% if exam_question.explanation %}
+                                    <input type="hidden" id="explanation-{{ exam_question.id }}" value="{{ exam_question.explanation.id }}">
+                                    {% if exam_question.explanation.text %}
+                                        <textarea class="form-control text-exam" id="text-explanation-{{ exam_question.id }}">{{ exam_question.explanation.text }}</textarea>
+                                        <hr>
+                                    {% else %}
+                                        <textarea class="form-control text-exam" id="text-explanation-{{ exam_question.id }}"></textarea>
+                                        <hr>
+                                    {% endif %}
+                                    {% if exam_question.explanation.image %}
+                                        <img src="{{ exam_question.explanation.image }}" id="explanation-image-{{ exam_question.id }}"  class="exam-image" alt="Image">
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <strong>URL Imagen:</strong>
+                                            <input type="url" class="form-control" value="{{ exam_question.explanation.image }}" id="image-explanation-{{ exam_question.id }}" style="width: auto; min-width: 0;">
+                                        </div>
+                                        <hr>
+                                    {% else %}
+                                        <img src="" id="explanation-image-{{ exam_question.id }}"  class="exam-image" alt="Image" hidden>
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <strong>URL:</strong>
+                                            <input type="url" class="form-control" placeholder="URL de la Imagen" id="image-explanation-{{ exam_question.id }}" style="width: auto; min-width: 0;">
+                                        </div>
+                                        <hr>
+                                    {% endif %}
+                                    {% if exam_question.explanation.video %}
+                                        <!-- display video on youtube format -->
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <iframe width="560" height="315" src="{{ exam_question.explanation.video }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" id="explanation-video-{{ exam_question.id }}" allowfullscreen></iframe>
+                                        </div>
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <strong>URL Video:</strong>
+                                            <input type="url" class="form-control" value="{{ exam_question.explanation.video }}" id="video-explanation-{{ exam_question.id }}" style="width: auto; min-width: 0;">
+                                        </div>
+                                        <hr>
+                                    {% else %}
+                                        <!-- display video on youtube format -->
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <iframe width="560" height="315" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" id="explanation-video-{{ exam_question.id }}" allowfullscreen hidden></iframe>
+                                        </div>
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <strong>URL Video:</strong>
+                                            <input type="url" class="form-control" placeholder="URL de Video" id="video-explanation-{{ exam_question.id }}" style="width: auto; min-width: 0;">
+                                        </div>
+                                        <hr>
+                                    {% endif %}
+                                {% else %}
+                                    <input type="hidden" id="explanation-{{ exam_question.id }}" value="{{ exam_question.explanation.id }}">
+                                    <textarea class="form-control text-exam" id="text-explanation-{{ exam_question.id }}"></textarea>
+                                    <hr>
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <strong>URL Imagen:</strong>
+                                        <input type="url" class="form-control" placeholder="URL de Imagen" id="image-explanation-{{ exam_question.id }}" style="width: auto; min-width: 0;">
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <strong>URL Video:</strong>
+                                        <input type="url" class="form-control" placeholder="URL de Video" id="video-explanation-{{ exam_question.id }}" style="width: auto; min-width: 0;">
+                                    </div>
+                                    <hr>
+                                {% endif %}
+                                <div class="d-flex justify-content-center">
+                                    <!-- Button trigger modal -->
+                                    <button type="button" id="triggerModal-{{ exam_question.id }}-{{ exam.id }}" class="btn btn-danger question-buttons delete-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                        Eliminar Pregunta
+                                    </button>
+                                    <button class="btn btn-success question-buttons update-button" id="update-question-{{ exam_question.id }}" value="{{ exam_question.id }}">Actualizar Pregunta</button>
+                                    <button type="button" class="btn btn-primary question-buttons preview-button" id="previewQuestion-{{ exam_question.id }}" data-bs-toggle="modal" data-bs-target="#viewQuestionModal">Vista Previa</button>
+                                </div>
+                            </div>
+                        </form>
+                    {% endfor %}
+                    <!-- If there is nothing in exam_questions_options then show a text-->
+                    {% if not exam_questions_options %}
+                    <div class="d-flex justify-content-center align-items-center">
+                        <p style="margin:0"><strong>No hay Preguntas</strong></p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <!-- Next and previous button -->
+                    <div class="container text-center">
+                        <button class="btn btn-primary" id="previous">Previous</button>
+                        <button class="btn btn-primary" id="next">Next</button>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="accordion" id="accordionPanelsStayOpenExample">
+                <div class="accordion-item">
+                <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                    Índice de Preguntas
+                    </button>
+                </h2>
+                <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <!-- Filters for the index of questions -->
+                            <div class="col text-center m-1"><a class="btn btn-secondary" href="/exam_edit/{{exam.id}}/fecha" role="button">Fecha de Creación</a></div>
+                            <div class="col text-center m-1"><a class="btn btn-primary" href="/exam_edit/{{exam.id}}/categoria" role="button">Categorias y Subcategorias</a></div>
+                            <div class="col text-center m-1"><a class="btn btn-success" href="/exam_edit/{{exam.id}}/orden" role="button">Número de Orden</a></div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="d-flex justify-content-center flex-wrap align-items-center">
+                                <!-- Index of questions -->
+                                {% for exam_question, exam_question_options in exam_questions_options %}
+                                    <div class="p-2 g-col-1">
+                                        <button class="btn btn-primary index-button mx-1" id="indexButton-{{ exam_question.id }}" value="{{ forloop.counter }}">{{ forloop.counter }}</button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div id="new-question">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <button class="btn btn-primary" id="edit-questions-btn">Editar Preguntas</button>
+                        </div>
+                        <div class="col-6">
+                            <div id="total-questions" class="align-items-center">
+                                <strong>Preguntas: </strong>{{exam_questions_options|length}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form class="form-group" id="new-question-form" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                        <!-- New question -->
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <strong>Nueva Pregunta</strong>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex justify-content-end align-items-center">
+                                    <strong>Orden:</strong> <input type="number" class="form-control OrdenQuestions" id="orden-new">
+                                </div>
+                            </div>
+                        </div>
+                        <textarea class="form-control text-exam" id="text-new"></textarea>
+                        <hr>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <strong>URL Imagen:</strong>
+                            <input type="url" class="form-control" placeholder="URL de Imagen" id="image-new" style="width: auto; min-width: 0;">
+                        </div>
+                        <hr>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                Categoria:
+                                <select name="category" class="form-select" id="category-new">
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                Subcategoria:
+                                <select name="subcategory" class="form-select" id="subcategory-new">
+                                    {% for subcategory in subcategories %}
+                                        <option value="{{ subcategory.id }}">{{ subcategory.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </small>
+                        </p>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input image-switch" type="checkbox" role="switch" id="image-switch-0">
+                            <label class="form-check-label" for="image-switch">Activar si opciones son imagenes</label>
+                        </div>
+                        <!-- Options -->
+                        <div id="FormNew">
+                        {% for i in '1234' %}
+                        <div class="form-check form-new-question" id="formNewQuestion-{{ i }}">
+                            <input class="form-check-input" type="radio" name="options-new">
+                            <label class="form-check-label" style="width: 100%">
+                                <span class="text-input-0" style="display:inline-block">
+                                    <input type="text" class="form-control OptionNewText" id="textOptionNew-{{ i }}">
+                                </span>
+                                <span class="image-input-0" style="display:none">
+                                    URL de imagen: <input type="url" class="form-control OptionNewImage" id="imageOptionNew-{{ i }}" placeholder="URL de la imagen" style="width: auto; min-width: 0;">
+                                </span>
+                                <button type="button" class="btn btn-danger delete-new-option">Eliminar Opción</button>
+                            </label>
+                        </div>
+                        {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-primary" id="add-option">Añadir Opción</button>
+                        <hr class="border border-secondary border-2 opacity-50">
+                        <p><strong>Explicación</strong></p>
+                        <textarea class="form-control text-exam" id="text-explanation-new"></textarea>
+                        <hr>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <strong>URL Imagen:</strong>
+                            <input type="url" class="form-control" placeholder="URL de Imagen" id="image-explanation-new" style="width: auto; min-width: 0;">
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <strong>URL Video:</strong>
+                            <input type="url" class="form-control" placeholder="URL de Video" id="video-explanation-new" style="width: auto; min-width: 0;">
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="container text-center">
+                        <button type="button" class="btn btn-success" id="create-question" value="{{exam.id}}">Guardar</button>
+                        <button type="button" class="btn btn-primary" id="new-question-preview" data-bs-toggle="modal" data-bs-target="#viewQuestionModal">Vista Previa</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <!-- JavaScript display engine for mathematics: https://www.mathjax.org/#gettingstarted -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="{% static 'Project/exam_edit.js' %}"></script>
+{% endblock %}
