@@ -1,12 +1,54 @@
-# Portfolio
+# Energy Consumption Calculator
 
-## A platform for Universities exams
-The goal of this project is to demonstrate how an exam platform could be implemented to help people practice for university entrance exams. The platform is based on a web application that allows collaborators (people authorized by the administrator) to create questions and explanations for the exams, and students to practice the exams and check their results. It also provides information about the universities and the exams.
+## Introduction
+The Energy Consumption Calculator is a Python-based tool that allows users to measure the energy consumption of a specified application over a defined duration. This README provides an overview of the application, how to use it, and its functionalities.
 
-### Technologies used
-<a href="https://www.python.org" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="40" height="40"/> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" alt="javascript" width="40" height="40"/> <a href="https://getbootstrap.com" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/bootstrap/bootstrap-plain-wordmark.svg" alt="bootstrap" width="40" height="40"/> <a href="https://www.sqlite.org/" target="_blank" rel="noreferrer"> <img src="https://www.vectorlogo.zone/logos/sqlite/sqlite-icon.svg" alt="sqlite" width="40" height="40"/> </a> <a href="https://www.w3.org/html/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original-wordmark.svg" alt="html5" width="40" height="40"/> <a href="https://www.w3schools.com/css/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original-wordmark.svg" alt="css3" width="40" height="40"/>
+## Usage
+1. Run the application by executing the app_energy_calculator.py script.
+1. Input the application name or PID that you want to measure.
+1. Enter the duration (in seconds) for which you want to measure energy consumption.
+1. Click the "Calculate" button.
 
-### Video
-<a href="https://www.youtube.com/embed/-KkuI7VzIIw" rel="nofollow"><img src="https://drive.google.com/uc?id=1NxCVNCGmzeKqmfpvgEaTLdbD0kwQGj3c" alt="Youtube-Video" style="max-width: 100%;"></a>
+The application will display real-time CPU and memory usage, as well as power consumption, in a table. After the specified duration, the total energy consumption will be displayed.
 
-Visit [Repository](https://github.com/JhojanL/Portfolio/tree/A-platform-for-Universities-exams).
+## Functionality
+The Application Energy Consumption Calculator provides the following functionalities:
+
+- Measure CPU and memory usage of a specified application.
+- Calculate and display power consumption over a defined duration.
+- Display real-time usage in a table format.
+
+## Results and Output
+The table displays the following information during the measurement:
+
+- Time (s): Elapsed time in seconds.
+- CPU Usage (%): Normalized CPU usage in percentage.
+- Memory Usage (%): Memory usage of the application in percentage.
+- Power Consumption (W): Estimated power consumption in Watts.
+
+After the specified duration is reached, the application will display the total energy consumption of the application in Joules.
+
+## Technical Details
+The application uses the psutil library to monitor a specified application's CPU and memory usage. Power consumption is estimated using an average of CPU and memory usage. The GUI is built using the tkinter and ttk libraries.
+
+## How to Run
+### Terminal Version
+In your terminal, `cd` into the `Tech_Test_Task` directory.
+Then run the following commands:
+```bash
+pip install -r requirements.txt
+python app_energy_calculator.py
+```
+### Executable Version
+- Download the `app_ecc.exe` file from [Here](https://drive.google.com/file/d/1GWtoD8LdB7puclEQZfjLeeYkoZugrBGC/view?usp=sharing).
+- Double-click on the `app_ecc.exe` file to run the application.
+- If you see a warning message like "Windows protected your PC" or "Windows SmartScreen prevented an unrecognized app from starting." Despite the warning, the "More info" option usually allows the user to proceed and run the application.
+
+## Additional Information
+- The application was developed and tested on a Windows 10 machine. It is not guaranteed to work on other operating systems.
+- The application was developed and tested using Python 3.10. It is not guaranteed to work on other versions of Python.
+
+## Images
+![image](https://drive.google.com/uc?id=1smF3xxDv9BY7pe_OCr04w70nZgrcwVnr)
+
+![image](https://drive.google.com/uc?id=1ofggw3Fu8eRXt9atZwrGpSGJIA4cwTti)
