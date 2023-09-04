@@ -10,3 +10,14 @@ The goal of this project is to demonstrate how an exam platform could be impleme
 <a href="https://www.youtube.com/embed/-KkuI7VzIIw" rel="nofollow"><img src="https://drive.google.com/uc?id=1NxCVNCGmzeKqmfpvgEaTLdbD0kwQGj3c" alt="Youtube-Video" style="max-width: 100%;"></a>
 
 Visit [Repository](https://github.com/JhojanL/Portfolio/tree/A-platform-for-Universities-exams).
+
+## Energy Consumption Calculator
+The Energy Consumption Calculator is a Python-based tool that allows users to measure the energy consumption of a specified application over a defined duration.
+
+### Technologies used
+<a href="https://www.python.org" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="40" height="40"/>
+
+### Image
+<img src="https://drive.google.com/uc?id=1smF3xxDv9BY7pe_OCr04w70nZgrcwVnr" alt="Youtube-Video" style="max-width: 100%;">
+
+Visit [Repository](https://github.com/JhojanL/Portfolio/tree/Energy-Consumption-Calculator).
