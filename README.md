@@ -9,7 +9,7 @@ The goal of this project is to demonstrate how an exam platform could be impleme
 ### Video
 <a href="https://www.youtube.com/embed/-KkuI7VzIIw" rel="nofollow"><img src="https://drive.google.com/uc?id=1NxCVNCGmzeKqmfpvgEaTLdbD0kwQGj3c" alt="Youtube-Video" style="max-width: 100%;"></a>
 
-Visit [Repository](https://github.com/JhojanL/Portfolio/tree/A-platform-for-Universities-exams).
+Visit [Repository](https://github.com/JhojanL/Portfolio/tree/A-platform-for-university-exams).
 
 ## Seismic Data Fetcher and Viewer
 This application uses Ruby on Rails in API mode for the backend and React for the frontend. It fetches and persists seismic data from the USGS (earthquake.usgs.gov) and exposes three API endpoints for an external client to consume. A simple web page developed in React interacts with these endpoints.
